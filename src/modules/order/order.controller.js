@@ -12,6 +12,7 @@ import { sendData } from './../../utils/sendData.js';
 import cloudinary from './../../utils/cloud.js';
 
 import path from 'path';
+import Stripe from "stripe";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const createOrder = catchAsync(async (req, res, next) => {
@@ -103,6 +104,45 @@ export const createOrder = catchAsync(async (req, res, next) => {
         // clear cart
         clearCart(user._id);
     }
+
+    if (payment == 'visa') {
+        // payment 
+        console.log(process.env.STRIPE_KEY);
+        const stripe = new Stripe(process.env.STRIPE_KEY);
+        let existCoupon;
+        if (order.coupon.name !== undefined) {
+            existCoupon = await stripe.coupons.create({
+                percent_off: order.coupon.discount,
+                duration: "once"
+            });
+        }
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ["card"],
+            mode: "payment",
+            success_url: process.env.SUCCESS_URL,
+            cancel_url: process.env.CANCEL_URL,
+            line_items: await Promise.all(order.products.map(async (product) => {
+                let productId = await ProductModel.findById(product.productId);
+                console.log(productId);
+                return {
+                    price_data: {
+                        currency: "egp",
+                        product_data: {
+                            name: productId?.name,
+                            images: [productId.images[0].url]
+                        },
+                        unit_amount: product.itemPrice * 100
+                    },
+                    quantity: product.quantity
+                };
+            })),
+            discounts: existCoupon ? [{ coupon: existCoupon.id }] : []
+        });
+
+        return res.status(200).json({ status: "success", results: session.url });
+    }
+
     // return response
     sendData(200, "success", "Order placed successfully!, check email for invoice.", undefined, res);
 });
