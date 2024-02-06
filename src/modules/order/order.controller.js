@@ -99,7 +99,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
     });
     if (isSent) {
         // update stock
-        updateStock(order.products);
+        updateStock(order.products, true);
         // clear cart
         clearCart(user._id);
     }
@@ -108,8 +108,17 @@ export const createOrder = catchAsync(async (req, res, next) => {
 });
 
 export const cancelOrder = catchAsync(async (req, res, next) => {
+    const order = await OrderModel.findById(req.params.orderId);
+    if (!order) return next(new AppError("order not found!", 400));
 
+    if (order.status === "shipped" || order.status === "delivered") {
+        return next(new AppError("can't cancel order!"));
+    }
 
+    order.status = "canceled";
+    await order.save();
 
+    updateStock(order.products, false);
 
+    sendData(200, "success", "order canceled successfully!", undefined, res);
 });

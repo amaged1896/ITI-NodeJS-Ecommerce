@@ -8,13 +8,25 @@ export const clearCart = async (userId) => {
 };
 
 // update stock
-export const updateStock = async (products) => {
-    for (const product of products) {
-        await ProductModel.findByIdAndUpdate(product.productId, {
-            $inc: {
-                availableItems: - product.quantity,
-                soldItems: product.quantity
-            }
-        });
+export const updateStock = async (products, placeOrder) => {
+    if (placeOrder) {
+        for (const product of products) {
+            await ProductModel.findByIdAndUpdate(product.productId, {
+                $inc: {
+                    availableItems: -product.quantity,
+                    soldItems: product.quantity
+                }
+            });
+        }
+    } else {
+        for (const product of products) {
+            await ProductModel.findByIdAndUpdate(product.productId, {
+                $inc: {
+                    availableItems: product.quantity,
+                    soldItems: -product.quantity
+                }
+            });
+        }
     }
+
 };
