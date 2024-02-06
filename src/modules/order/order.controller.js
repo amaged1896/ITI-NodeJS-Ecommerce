@@ -19,7 +19,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
     // check coupon
     let checkCoupon;
     if (coupon) {
-        checkCoupon = await CouponModel.findOne({ name: coupon, expiredAt: { $gt: Date.now() } });
+        checkCoupon = await CouponModel.findOne({ code: coupon, expiredAt: { $gt: Date.now() } });
         if (!coupon) return next(new AppError("Invalid coupon", 400));
     }
     // check cart
@@ -64,7 +64,6 @@ export const createOrder = catchAsync(async (req, res, next) => {
         price: orderPrice
 
     });
-
     // generate invoice
     const user = req.user;
     const invoice = {
@@ -80,24 +79,20 @@ export const createOrder = catchAsync(async (req, res, next) => {
     };
 
     const pdfPath = path.join(__dirname, `./../../../invoiceTemp/${order._id}.pdf`);
-
     createInvoice(invoice, pdfPath);
-    // upload cloudinary
-    console.log("HEREEEEEEEEE");
 
+    // upload cloudinary
     const { secure_url, public_id } = await cloudinary.uploader.upload(pdfPath,
         { folder: `${process.env.FOLDER_CLOUD_NAME}/order/invoice/${user._id}` });
-    console.log("pdf uploaded to cloudinary!");
-
-    // delete file from file system
 
     // add invoice to order 
     order.invoice = { id: public_id, url: secure_url };
     await order.save();
-
     // send email invoice
     const isSent = await sendEmail({
-        to: user.email, subject: "Order Invoice", attachments: [{
+        email: user.email,
+        subject: "Order Invoice",
+        attachments: [{
             path: secure_url,
             contentType: "application/pdf"
         }]
@@ -109,8 +104,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
         clearCart(user._id);
     }
     // return response
-    sendData(200, "success", "Order placed successfully!, check email for invoice.", undefined);
-
+    sendData(200, "success", "Order placed successfully!, check email for invoice.", undefined, res);
 });
 
 export const cancelOrder = catchAsync(async (req, res, next) => {

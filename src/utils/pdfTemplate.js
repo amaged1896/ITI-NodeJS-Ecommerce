@@ -3,13 +3,6 @@ import { fileURLToPath } from "url";
 import path from "path";
 import PDFDocument from "pdfkit";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const imagePath = path.join(__dirname, "./../../defaults/logo.png");
-
-
-
 export function createInvoice(invoice, path) {
     let doc = new PDFDocument({ size: "A4", margin: 50 });
 
@@ -21,10 +14,8 @@ export function createInvoice(invoice, path) {
     doc.end();
     doc.pipe(fs.createWriteStream(path));
 }
-// ./../../defaults\logo.png
 function generateHeader(doc) {
     doc
-        .image(imagePath, 50, 45, { width: 50 })
         .fillColor("#444444")
         .fontSize(20)
         .text("ACME Inc.", 110, 57)

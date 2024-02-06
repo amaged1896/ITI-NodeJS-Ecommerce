@@ -1,6 +1,5 @@
 import { createInvoice } from "./pdfTemplate.js";
 
-createInvoice;
 const invoice = {
     shipping: {
         name: "John Doe",
