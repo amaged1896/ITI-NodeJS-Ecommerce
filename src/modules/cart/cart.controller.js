@@ -10,14 +10,31 @@ export const addToCart = catchAsync(async (req, res, next) => {
     // check product
     const product = await ProductModel.findById(productId);
     if (!product) return next(new AppError("Product not found!", 404));
-
-    // // check stock
+    //  check stock
     if (!product.checkStock(quantity)) {
         return next(new AppError(`Sorry, only ${product.availableItems} Items left on stock!`, 404));
     }
-    const cart = await CartModel.findOneAndUpdate({ user: req.user._id }, { $push: { products: { productId, quantity } } }, { new: true });
-
-    sendData(200, "success", "Product added successfully to cart", cart, res);
+    // check product existence in cart
+    const isProductInCart = await CartModel.findOne({
+        user: req.user._id,
+        "products.productId": productId
+    });
+    if (isProductInCart) {
+        isProductInCart.products.forEach((productObject) => {
+            if (
+                productObject.productId.toString() === productId.toString() &&
+                productObject.quantity + quantity < product.availableItems
+            ) {
+                productObject.quantity = quantity;
+            }
+        });
+        await isProductInCart.save();
+        sendData(200, "success", "Product added successfully to cart", cart, res);
+    }
+    else {
+        const cart = await CartModel.findOneAndUpdate({ user: req.user._id }, { $push: { products: { productId, quantity } } }, { new: true });
+        sendData(200, "success", "Product added successfully to cart", cart, res);
+    }
 });
 
 export const getUserCart = catchAsync(async (req, res, next) => {
