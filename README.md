@@ -111,14 +111,15 @@ The API supports:
 
 ### Error Handling Controllers
 
-- `handleCastErrorDB`
-- `handleDuplicateFieldsDB`
-- `handleValidationErrorDB`
-- `handleJWTError`
-- `handleJWTExpiredError`
-- `sendErrorDev`
-- `sendErrorProduction`
-- `globalErrorHandler`
+Refined for clarity and efficiency, our error handling mechanisms ensure comprehensive feedback and resolution guidance:
+
+- **Database Errors**: Address issues like incorrect data types or invalid IDs (`handleCastErrorDB`), duplicate data (`handleDuplicateFieldsDB`), and validation failures (`handleValidationErrorDB`).
+- **Authentication Errors**: Manage errors related to JWT authentication (`handleJWTError`) and expired tokens (`handleJWTExpiredError`).
+- **Operational Errors**: Provide detailed error information in development (`sendErrorDev`) and tailor responses for production (`sendErrorProduction`), with a global catch-all (`globalErrorHandler`) for unhandled exceptions.
+
+## Documentation
+
+For a detailed overview of API endpoints, request and response formats, and interactive examples, please refer to our comprehensive [API Documentation on Postman](https://documenter.getpostman.com/view/25935609/2s9Yyy7J3o).
 
 ## Getting Started
 
