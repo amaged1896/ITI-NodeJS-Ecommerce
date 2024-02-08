@@ -8,7 +8,11 @@ import { sendData } from "../../utils/sendData.js";
 export const addToCart = catchAsync(async (req, res, next) => {
     const { productId, quantity } = req.body;
     // check product
-    const product = await ProductModel.findById(productId);
+    const product = await ProductModel.findById(productId).populate({
+        path: 'products.productId',
+        model: 'product',
+        strictPopulate: false
+    });
     if (!product) return next(new AppError("Product not found!", 404));
     //  check stock
     if (!product.checkStock(quantity)) {

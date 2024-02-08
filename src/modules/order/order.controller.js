@@ -25,6 +25,7 @@ export const createOrder = catchAsync(async (req, res, next) => {
     }
     // check cart
     const cart = await CartModel.findOne({ user: req.user._id });
+    // console.log(cart.products);
     const products = cart.products;
     if (products.length < 1) return next(new AppError("Empty Cart!", 400));
 
@@ -34,7 +35,11 @@ export const createOrder = catchAsync(async (req, res, next) => {
     // check products 
     for (let i = 0; i < products.length; i++) {
         // check products existence
-        const product = await ProductModel.findById(products[i].productId);
+        const product = await ProductModel.findById(products[i].productId).populate({
+            path: 'products.productId',
+            model: 'product',
+            strictPopulate: false
+        });
         if (!product) return next(new AppError(`Product ${products[i].productId} is not found`, 400));
         // check product stock
         if (!product.checkStock(products[i].quantity))
@@ -107,10 +112,9 @@ export const createOrder = catchAsync(async (req, res, next) => {
 
     if (payment == 'visa') {
         // payment 
-        console.log(process.env.STRIPE_KEY);
         const stripe = new Stripe(process.env.STRIPE_KEY);
         let existCoupon;
-        if (order.coupon.name !== undefined) {
+        if (order.coupon != undefined) {
             existCoupon = await stripe.coupons.create({
                 percent_off: order.coupon.discount,
                 duration: "once"
@@ -118,21 +122,25 @@ export const createOrder = catchAsync(async (req, res, next) => {
         }
 
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            mode: "payment",
+            payment_method_types: ['card'],
+            mode: 'payment',
             success_url: process.env.SUCCESS_URL,
             cancel_url: process.env.CANCEL_URL,
             line_items: await Promise.all(order.products.map(async (product) => {
-                let productId = await ProductModel.findById(product.productId);
-                console.log(productId);
+                const productDetails = await ProductModel.findById(product.productId);
+                if (!productDetails) {
+                    throw new Error(`Product with ID ${product.productId} not found`);
+                }
+                // console.log(productDetails); // For debugging, consider removing or adjusting logging for production
                 return {
                     price_data: {
-                        currency: "egp",
+                        currency: 'egp',
                         product_data: {
-                            name: productId?.name,
-                            images: [productId.images[0].url]
+                            name: productDetails.name,
+                            // Use map to include all images
+                            images: productDetails.images.map(image => image.url)
                         },
-                        unit_amount: product.itemPrice * 100
+                        unit_amount: Math.round(product.itemPrice * 100) // Ensure the price is in the smallest currency unit, e.g., cents
                     },
                     quantity: product.quantity
                 };
