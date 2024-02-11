@@ -21,6 +21,13 @@ The API leverages the following technologies and packages:
 - **bcryptjs**: For hashing passwords.
 - **cloudinary**: For cloud-based image and video management.
 - **dotenv**: For loading environment variables from a `.env` file.
+- **cors**: For enabling Cross-Origin Resource Sharing.
+- **express-rate-limit**: For basic rate-limiting middleware.
+- **helmet**: For securing HTTP headers.
+- **express-mongo-sanitize**: For preventing MongoDB operator injection.
+- **xss-clean**: For cleaning user input to prevent XSS attacks.
+- **hpp**: For protecting against HTTP Parameter Pollution attacks.
+- **stripe**: For integrating payment processing capabilities.
 
 ## Database Models
 
@@ -127,17 +134,17 @@ To get started with this API:
 
 1. Clone the repository.
 2. Install dependencies using `npm install`.
-3. Set up your environment variables in a `.env` file.
-4. Run the application using `npm start`.
+3. Set up your environment variables in a `.env` file. This should include your database connection string, Stripe secret key, Cloudinary credentials, and any other sensitive/configurable information required by the application.
+4. Run the application using `npm start`. This will start your server and connect it to the database, making your API endpoints accessible via the specified port on localhost.
 
 ## Contribution
 
-Contributions are welcome! If you have suggestions or want to contribute to the codebase, please feel free to open issues or submit pull requests.
+Contributions are welcome! If you have suggestions or want to contribute to the codebase, please feel free to open issues or submit pull requests. We're always looking for ways to improve the application and add new features.
 
 ## License
 
-This project is unlicensed and free to use.
+This project is unlicensed and free to use. You can copy, modify, distribute, and perform the work, even for commercial purposes, all without asking permission.
 
 ---
 
-Please read the documentation carefully to understand how to use this API effectively. Happy coding!
+Please read the documentation carefully to understand how to use this API effectively. We hope this API serves as a robust foundation for your e-commerce platform development needs. Happy coding!
