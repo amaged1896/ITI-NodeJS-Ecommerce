@@ -11,6 +11,9 @@ import orderRouter from "./src/modules/order/order.router.js";
 import rateLimit from "express-rate-limit";
 import cors from "cors";
 import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
+import xss from "xss-clean";
+
 export const appRouter = (app, express) => {
     // Global Middleware 
     app.use(helmet());
@@ -22,6 +25,12 @@ export const appRouter = (app, express) => {
     });
     app.use('/api', limiter);
     app.use(express.json());
+
+    // data sanitization against NoSQL query injection => clean data from malicious MongoDB operators
+    app.use(mongoSanitize());
+
+    // data sanitization against XSS => clean data from malicious HTML code
+    app.use(xss());
 
     // auth
     app.use('/api/v1/auth', authRouter);
