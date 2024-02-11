@@ -13,6 +13,7 @@ import cors from "cors";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import xss from "xss-clean";
+import hpp from "hpp";
 
 export const appRouter = (app, express) => {
     // Global Middleware 
@@ -31,6 +32,22 @@ export const appRouter = (app, express) => {
 
     // data sanitization against XSS => clean data from malicious HTML code
     app.use(xss());
+
+    // prevent parameter pollution => remove duplicate fields from the query string
+    app.use(hpp({
+        whitelist: [
+            'name',
+            'price',
+            'rating',
+            'createdAt',
+            'soldItems',
+            'availableItems',
+            'description',
+            'category',
+            'slug',
+            'brand',
+        ]
+    }));
 
     // auth
     app.use('/api/v1/auth', authRouter);
