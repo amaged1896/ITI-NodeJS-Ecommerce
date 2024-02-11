@@ -8,9 +8,19 @@ import productRouter from "./src/modules/product/product.router.js";
 import couponRouter from "./src/modules/coupon/coupon.router.js";
 import cartRouter from "./src/modules/cart/cart.router.js";
 import orderRouter from "./src/modules/order/order.router.js";
-
+import rateLimit from "express-rate-limit";
+import cors from "cors";
+import helmet from "helmet";
 export const appRouter = (app, express) => {
     // Global Middleware 
+    app.use(helmet());
+    app.use(cors());
+    const limiter = rateLimit({
+        max: 100, // limit each IP to 100 requests per windowMs
+        windowMs: 60 * 60 * 1000, // 1 hour
+        message: "Too many requests from this IP, please try again after an hour!"
+    });
+    app.use('/api', limiter);
     app.use(express.json());
 
     // auth
