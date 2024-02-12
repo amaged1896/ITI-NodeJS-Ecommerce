@@ -12,8 +12,12 @@ import rateLimit from "express-rate-limit";
 import cors from "cors";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
-import xss from "xss-clean";
 import hpp from "hpp";
+import createDOMPurify from 'dompurify';
+import { JSDOM } from 'jsdom';
+
+const { window } = new JSDOM('');
+const DOMPurify = createDOMPurify(window);
 
 export const appRouter = (app, express) => {
     // Global Middleware 
@@ -31,7 +35,10 @@ export const appRouter = (app, express) => {
     app.use(mongoSanitize());
 
     // data sanitization against XSS => clean data from malicious HTML code
-    app.use(xss());
+    app.use((req, res, next) => {
+        if (req.body) req.body = DOMPurify.sanitize(req.body);
+        next();
+    });
 
     // prevent parameter pollution => remove duplicate fields from the query string
     app.use(hpp({
