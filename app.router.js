@@ -56,6 +56,10 @@ export const appRouter = (app, express) => {
         ]
     }));
 
+    app.get('/', (req, res) => {
+        res.send('Welcome to Ecommerce API');
+    });
+
     // auth
     app.use('/api/v1/auth', authRouter);
 
